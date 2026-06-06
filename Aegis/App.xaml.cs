@@ -18,22 +18,20 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         services.AddSingleton<AppDbContext>();
+        services.AddSingleton<IAuthService, AuthService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<MainViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<ReceptionViewModel>();
         services.AddTransient<ReleaseViewModel>();
         services.AddTransient<HistoryViewModel>();
+
         ServiceProvider = services.BuildServiceProvider();
 
-        // Получаем сервисы
         var mainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
         var navigationService = ServiceProvider.GetRequiredService<INavigationService>() as NavigationService;
 
-        // Устанавливаем MainViewModel в NavigationService
         navigationService?.SetMainViewModel(mainViewModel);
-
-        // Теперь можно безопасно навигировать
         mainViewModel.Initialize();
 
         var mainWindow = new MainWindow

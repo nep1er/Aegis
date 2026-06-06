@@ -2,12 +2,16 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:Aegis.ViewModels"
+        xmlns:converters="clr-namespace:Aegis.Converters"
         xmlns:v="clr-namespace:Aegis.Views"
         Title="AEGIS - Система управления парковками" 
         Height="800" Width="1200"
         WindowState="Maximized">
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
             <v:DashboardView />
         </DataTemplate>
@@ -20,61 +24,103 @@
         <DataTemplate DataType="{x:Type vm:HistoryViewModel}">
             <v:HistoryView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:LoginViewModel}">
+            <v:LoginView />
+        </DataTemplate>
+
     </Window.Resources>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <!-- Основной layout (показывается только после входа) -->
+        <Grid Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
 
-        <!-- Левая панель навигации -->
-        <Border Grid.Column="0" Background="#2C3E50">
-            <StackPanel>
-                <TextBlock Text="AEGIS" 
-                           FontSize="28" 
-                           FontWeight="Bold" 
-                           Foreground="White"
-                           HorizontalAlignment="Center"
-                           Margin="0,30,0,50"/>
+            <!-- Левая панель навигации -->
+            <Border Grid.Column="0" Grid.Row="0" Background="#2C3E50">
+                <StackPanel>
+                    <TextBlock Text="AEGIS" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               Margin="0,30,0,50"/>
 
-                <Button Content="Главная" 
-                        Height="50"
-                        Margin="10,5"
-                        Background="#34495E"
+                    <Button Content="Главная" 
+                            Height="50"
+                            Margin="10,5"
+                            Background="#34495E"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding NavigateToDashboardCommand}"/>
+
+                    <Button Content="Оформление" 
+                            Height="50"
+                            Margin="10,5"
+                            Background="#34495E"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding NavigateToReceptionCommand}"/>
+
+                    <Button Content="Выдача" 
+                            Height="50"
+                            Margin="10,5"
+                            Background="#34495E"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding NavigateToReleaseCommand}"/>
+
+                    <Button Content="История авто" 
+                            Height="50"
+                            Margin="10,5"
+                            Background="#34495E"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding NavigateToHistoryCommand}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Основной контент -->
+            <Border Grid.Column="1" Grid.Row="0" Background="#ECF0F1">
+                <ContentControl Content="{Binding CurrentViewModel}" />
+            </Border>
+
+            <!-- Нижняя панель с информацией о пользователе -->
+            <Border Grid.Column="0" Grid.Row="1" Background="#1A252F">
+                <StackPanel VerticalAlignment="Center" Margin="15,0">
+                    <TextBlock Text="{Binding CurrentUserName}" 
+                               Foreground="White" 
+                               FontSize="14"
+                               FontWeight="Bold"/>
+                    <TextBlock Text="{Binding CurrentUserRole}" 
+                               Foreground="#95A5A6" 
+                               FontSize="12"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Кнопка выхода -->
+            <Border Grid.Column="1" Grid.Row="1" Background="#1A252F">
+                <Button Content="Выйти" 
+                        HorizontalAlignment="Right"
+                        Margin="0,0,20,0"
+                        Width="100"
+                        Height="35"
+                        Background="#E74C3C"
                         Foreground="White"
                         BorderThickness="0"
-                        Command="{Binding NavigateToDashboardCommand}"/>
+                        Cursor="Hand"
+                        Command="{Binding LogoutCommand}"/>
+            </Border>
+        </Grid>
 
-                <Button Content="Оформление" 
-                        Height="50"
-                        Margin="10,5"
-                        Background="#34495E"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Command="{Binding NavigateToReceptionCommand}"/>
-
-                <Button Content="Выдача" 
-                        Height="50"
-                        Margin="10,5"
-                        Background="#34495E"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Command="{Binding NavigateToReleaseCommand}"/>
-
-                <Button Content="История авто" 
-                        Height="50"
-                        Margin="10,5"
-                        Background="#34495E"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Command="{Binding NavigateToHistoryCommand}"/>
-            </StackPanel>
-        </Border>
-
-        <!-- Основной контент -->
-        <Border Grid.Column="1" Background="#ECF0F1">
-            <ContentControl Content="{Binding CurrentViewModel}" />
-        </Border>
+        <!-- Экран входа (показывается до авторизации) -->
+        <ContentControl Content="{Binding CurrentViewModel}"
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
     </Grid>
 </Window>
