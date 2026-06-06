@@ -1,4 +1,5 @@
 ﻿using Aegis.Commands;
+using Aegis.Data.Entities;
 using Aegis.Services;
 
 namespace Aegis.ViewModels;
@@ -9,6 +10,7 @@ public class MainViewModel : ViewModelBase
     private string _currentUserName = string.Empty;
     private string _currentUserRole = string.Empty;
     private bool _isLoggedIn;
+    private bool _isAdmin;
 
     private readonly INavigationService _navigationService;
     private readonly IAuthService _authService;
@@ -37,11 +39,26 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _isLoggedIn, value);
     }
 
-    // Команды навигации
+    public bool IsAdmin
+    {
+        get => _isAdmin;
+        set => SetProperty(ref _isAdmin, value);
+    }
+
+    // Команды навигации для оператора
     public RelayCommand NavigateToDashboardCommand { get; }
     public RelayCommand NavigateToReceptionCommand { get; }
     public RelayCommand NavigateToReleaseCommand { get; }
     public RelayCommand NavigateToHistoryCommand { get; }
+
+    // Команды навигации для админа
+    public RelayCommand NavigateToAdminDashboardCommand { get; }
+    public RelayCommand NavigateToEmployeesCommand { get; }
+    public RelayCommand NavigateToParkingEditorCommand { get; }
+    public RelayCommand NavigateToAnalyticsCommand { get; }
+    public RelayCommand NavigateToAdminHistoryCommand { get; }
+    public RelayCommand NavigateToPaymentsHistoryCommand { get; }
+
     public RelayCommand LogoutCommand { get; }
 
     public MainViewModel(INavigationService navigationService, IAuthService authService)
@@ -49,10 +66,20 @@ public class MainViewModel : ViewModelBase
         _navigationService = navigationService;
         _authService = authService;
 
+        // Команды оператора
         NavigateToDashboardCommand = new RelayCommand(_ => _navigationService.NavigateTo<DashboardViewModel>());
         NavigateToReceptionCommand = new RelayCommand(_ => _navigationService.NavigateTo<ReceptionViewModel>());
         NavigateToReleaseCommand = new RelayCommand(_ => _navigationService.NavigateTo<ReleaseViewModel>());
         NavigateToHistoryCommand = new RelayCommand(_ => _navigationService.NavigateTo<HistoryViewModel>());
+
+        // Команды админа
+        NavigateToAdminDashboardCommand = new RelayCommand(_ => _navigationService.NavigateTo<AdminDashboardViewModel>());
+        NavigateToEmployeesCommand = new RelayCommand(_ => _navigationService.NavigateTo<EmployeesViewModel>());
+        NavigateToParkingEditorCommand = new RelayCommand(_ => _navigationService.NavigateTo<ParkingEditorViewModel>());
+        NavigateToAnalyticsCommand = new RelayCommand(_ => _navigationService.NavigateTo<AnalyticsViewModel>());
+        NavigateToAdminHistoryCommand = new RelayCommand(_ => _navigationService.NavigateTo<AdminHistoryViewModel>());
+        NavigateToPaymentsHistoryCommand = new RelayCommand(_ => _navigationService.NavigateTo<PaymentsHistoryViewModel>());
+
         LogoutCommand = new RelayCommand(_ => Logout());
     }
 
@@ -75,7 +102,17 @@ public class MainViewModel : ViewModelBase
             CurrentUserName = _authService.CurrentUser.FullName ?? _authService.CurrentUser.Login;
             CurrentUserRole = _authService.CurrentUser.Role?.Name ?? "Неизвестно";
             IsLoggedIn = true;
-            _navigationService.NavigateTo<DashboardViewModel>();
+            IsAdmin = _authService.CurrentUser.Role?.Name == "Администратор";
+
+            // Навигация в зависимости от роли
+            if (IsAdmin)
+            {
+                _navigationService.NavigateTo<AdminDashboardViewModel>();
+            }
+            else
+            {
+                _navigationService.NavigateTo<DashboardViewModel>();
+            }
         }
     }
 

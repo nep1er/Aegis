@@ -17,14 +17,26 @@ public partial class App : Application
 
         var services = new ServiceCollection();
 
+        // ⚠️ ВАЖНО: регистрируем БД и AuthService!
         services.AddSingleton<AppDbContext>();
         services.AddSingleton<IAuthService, AuthService>();
+
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<MainViewModel>();
+
+        // Оператор
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<ReceptionViewModel>();
         services.AddTransient<ReleaseViewModel>();
         services.AddTransient<HistoryViewModel>();
+
+        // Админ
+        services.AddTransient<AdminDashboardViewModel>();
+        services.AddTransient<EmployeesViewModel>();
+        services.AddTransient<ParkingEditorViewModel>();
+        services.AddTransient<AnalyticsViewModel>();
+        services.AddTransient<AdminHistoryViewModel>();
+        services.AddTransient<PaymentsHistoryViewModel>();
 
         ServiceProvider = services.BuildServiceProvider();
 
