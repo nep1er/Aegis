@@ -1,14 +1,45 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
+using Aegis.Data;
+using Aegis.Services;
+using Aegis.ViewModels;
+using Aegis.Views;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Aegis
+namespace Aegis;
+
+public partial class App : Application
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
-    {
-    }
+    public static IServiceProvider? ServiceProvider { get; private set; }
 
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        var services = new ServiceCollection();
+
+        services.AddSingleton<AppDbContext>();
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<MainViewModel>();
+        services.AddTransient<DashboardViewModel>();
+        services.AddTransient<ReceptionViewModel>();
+        services.AddTransient<ReleaseViewModel>();
+        services.AddTransient<HistoryViewModel>();
+        ServiceProvider = services.BuildServiceProvider();
+
+        // Получаем сервисы
+        var mainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
+        var navigationService = ServiceProvider.GetRequiredService<INavigationService>() as NavigationService;
+
+        // Устанавливаем MainViewModel в NavigationService
+        navigationService?.SetMainViewModel(mainViewModel);
+
+        // Теперь можно безопасно навигировать
+        mainViewModel.Initialize();
+
+        var mainWindow = new MainWindow
+        {
+            DataContext = mainViewModel
+        };
+        mainWindow.Show();
+    }
 }
