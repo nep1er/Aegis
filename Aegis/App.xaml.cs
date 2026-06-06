@@ -4,7 +4,7 @@ using Aegis.Services;
 using Aegis.ViewModels;
 using Aegis.Views;
 using Microsoft.Extensions.DependencyInjection;
-
+using Aegis.Services.Repositories;
 namespace Aegis;
 
 public partial class App : Application
@@ -37,6 +37,11 @@ public partial class App : Application
         services.AddTransient<AnalyticsViewModel>();
         services.AddTransient<AdminHistoryViewModel>();
         services.AddTransient<PaymentsHistoryViewModel>();
+
+        services.AddSingleton<IParkingRepository, ParkingRepository>();
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<IAuthService, AuthService>();
+        services.AddSingleton<AppDbContext>();
 
         ServiceProvider = services.BuildServiceProvider();
 
