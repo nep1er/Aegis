@@ -21,40 +21,42 @@ public class ReceptionRepository : IReceptionRepository
 
         try
         {
-            // 1. Ищем или создаём Vehicle
             int vehicleId;
 
+            // 1. Ищем автомобиль ТОЛЬКО ПО ГОС НОМЕРУ
             using var findVehicleCmd = new NpgsqlCommand(
-                @"SELECT id FROM ""vehicles"" WHERE license_plate = @licensePlate",
+                @"SELECT id FROM ""vehicles"" WHERE license_plate = @plate LIMIT 1",
                 connection);
-            findVehicleCmd.Parameters.AddWithValue("licensePlate", data.LicensePlate);
+            findVehicleCmd.Parameters.AddWithValue("plate", data.LicensePlate);
 
-            var existingVehicleId = await findVehicleCmd.ExecuteScalarAsync();
+            var existingId = await findVehicleCmd.ExecuteScalarAsync();
 
-            if (existingVehicleId != null)
+            if (existingId != null)
             {
-                vehicleId = Convert.ToInt32(existingVehicleId);
+                // Машина уже есть в системе - используем её
+                vehicleId = Convert.ToInt32(existingId);
             }
             else
             {
-                using var insertVehicleCmd = new NpgsqlCommand(
-                    @"INSERT INTO ""vehicles"" (license_plate, vehicle_type_id) 
-                      VALUES (@licensePlate, @vehicleTypeId) 
-                      RETURNING id",
+                // Новая машина - создаём запись ТОЛЬКО с гос номером и типом
+                using var insertCmd = new NpgsqlCommand(
+                    @"INSERT INTO ""vehicles"" 
+                  (license_plate, vehicle_type_id) 
+                  VALUES (@licensePlate, @vehicleTypeId) 
+                  RETURNING id",
                     connection);
-                insertVehicleCmd.Parameters.AddWithValue("licensePlate", data.LicensePlate);
-                insertVehicleCmd.Parameters.AddWithValue("vehicleTypeId", data.VehicleTypeId);
-
-                vehicleId = Convert.ToInt32(await insertVehicleCmd.ExecuteScalarAsync());
+                insertCmd.Parameters.AddWithValue("licensePlate", data.LicensePlate);
+                insertCmd.Parameters.AddWithValue("vehicleTypeId", data.VehicleTypeId);
+                vehicleId = Convert.ToInt32(await insertCmd.ExecuteScalarAsync());
             }
 
             // 2. Создаём запись в ParkingRecords
             int parkingRecordId;
             using var insertRecordCmd = new NpgsqlCommand(
                 @"INSERT INTO ""parkingrecords"" 
-                  (spot_id, admission_date, operator_id, vehicle_type_id, vehicle_id, vehicle_status_id) 
-                  VALUES (@spotId, @admissionDate, @operatorId, @vehicleTypeId, @vehicleId, @vehicleStatusId) 
-                  RETURNING id",
+              (spot_id, admission_date, operator_id, vehicle_type_id, vehicle_id, vehicle_status_id) 
+              VALUES (@spotId, @admissionDate, @operatorId, @vehicleTypeId, @vehicleId, @vehicleStatusId) 
+              RETURNING id",
                 connection);
             insertRecordCmd.Parameters.AddWithValue("spotId", data.SpotId);
             insertRecordCmd.Parameters.AddWithValue("admissionDate", data.AdmissionDate);
@@ -73,7 +75,6 @@ public class ReceptionRepository : IReceptionRepository
             await updateSpotCmd.ExecuteNonQueryAsync();
 
             await transaction.CommitAsync();
-
             return parkingRecordId;
         }
         catch

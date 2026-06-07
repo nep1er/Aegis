@@ -231,7 +231,7 @@ public class ReleaseRepository : IReleaseRepository
             insertReleaseCmd.Parameters.AddWithValue("documentTypeId", data.DocumentTypeId);
             insertReleaseCmd.Parameters.AddWithValue("documentNumber", data.DocumentNumber);
             insertReleaseCmd.Parameters.AddWithValue("releaseDate", data.ReleaseDate);
-            insertReleaseCmd.Parameters.AddWithValue("tariffId", tariffId);  // ← ИСПРАВЛЕНО!
+            insertReleaseCmd.Parameters.AddWithValue("tariffId", tariffId);
             insertReleaseCmd.Parameters.AddWithValue("storageFee", data.StorageFee);
             insertReleaseCmd.Parameters.AddWithValue("towFine", data.TowFine);
             insertReleaseCmd.Parameters.AddWithValue("operatorId", data.OperatorId);

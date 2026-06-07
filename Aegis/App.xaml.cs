@@ -37,7 +37,7 @@ public partial class App : Application
         services.AddTransient<AnalyticsViewModel>();
         services.AddTransient<AdminHistoryViewModel>();
         services.AddTransient<PaymentsHistoryViewModel>();
-
+        services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ITariffRepository, TariffRepository>();
         services.AddSingleton<ISpotRepository, SpotRepository>();
         services.AddSingleton<IParkingRepository, ParkingRepository>();
