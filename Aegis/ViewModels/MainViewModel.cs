@@ -1,6 +1,8 @@
 ﻿using Aegis.Commands;
 using Aegis.Data.Entities;
+using Aegis.Models;
 using Aegis.Services;
+using Aegis.Services.Repositories;
 
 namespace Aegis.ViewModels;
 
@@ -11,9 +13,12 @@ public class MainViewModel : ViewModelBase
     private string _currentUserRole = string.Empty;
     private bool _isLoggedIn;
     private bool _isAdmin;
+    private ParkingDisplayModel? _currentParking;  // ← ОБЪЯВЛЕНО ОДИН РАЗ
 
     private readonly INavigationService _navigationService;
     private readonly IAuthService _authService;
+    private readonly IReleaseRepository _releaseRepository;   // ← ДОБАВЛЕНО
+    private readonly ITariffRepository _tariffRepository;     // ← ДОБАВЛЕНО
 
     public ViewModelBase? CurrentViewModel
     {
@@ -45,6 +50,12 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _isAdmin, value);
     }
 
+    public ParkingDisplayModel? CurrentParking
+    {
+        get => _currentParking;
+        set => SetProperty(ref _currentParking, value);
+    }
+
     // Команды навигации для оператора
     public RelayCommand NavigateToDashboardCommand { get; }
     public RelayCommand NavigateToReceptionCommand { get; }
@@ -61,15 +72,21 @@ public class MainViewModel : ViewModelBase
 
     public RelayCommand LogoutCommand { get; }
 
-    public MainViewModel(INavigationService navigationService, IAuthService authService)
+    public MainViewModel(
+        INavigationService navigationService,
+        IAuthService authService,
+        IReleaseRepository releaseRepository,   // ← ДОБАВЛЕНО
+        ITariffRepository tariffRepository)     // ← ДОБАВЛЕНО
     {
         _navigationService = navigationService;
         _authService = authService;
+        _releaseRepository = releaseRepository;   // ← ДОБАВЛЕНО
+        _tariffRepository = tariffRepository;     // ← ДОБАВЛЕНО
 
         // Команды оператора
         NavigateToDashboardCommand = new RelayCommand(_ => _navigationService.NavigateTo<DashboardViewModel>());
         NavigateToReceptionCommand = new RelayCommand(_ => _navigationService.NavigateTo<ReceptionViewModel>());
-        NavigateToReleaseCommand = new RelayCommand(_ => _navigationService.NavigateTo<ReleaseViewModel>());
+        NavigateToReleaseCommand = new RelayCommand(_ => NavigateToRelease(), _ => CanNavigateToRelease());
         NavigateToHistoryCommand = new RelayCommand(_ => _navigationService.NavigateTo<HistoryViewModel>());
 
         // Команды админа
@@ -104,7 +121,6 @@ public class MainViewModel : ViewModelBase
             IsLoggedIn = true;
             IsAdmin = _authService.CurrentUser.Role?.Name == "Администратор";
 
-            // Навигация в зависимости от роли
             if (IsAdmin)
             {
                 _navigationService.NavigateTo<AdminDashboardViewModel>();
@@ -121,6 +137,31 @@ public class MainViewModel : ViewModelBase
         _authService.Logout();
         CurrentUserName = string.Empty;
         CurrentUserRole = string.Empty;
+        CurrentParking = null;
         ShowLogin();
+    }
+
+    private bool CanNavigateToRelease()
+    {
+        return _currentParking != null;
+    }
+
+    private void NavigateToRelease()
+    {
+        if (_currentParking == null) return;
+
+        var releaseVm = new ReleaseViewModel(
+            _currentParking,
+            _authService,
+            _navigationService,
+            _releaseRepository,
+            _tariffRepository);
+
+        _navigationService.NavigateTo(releaseVm);
+    }
+
+    public void SetCurrentParking(ParkingDisplayModel? parking)
+    {
+        CurrentParking = parking;
     }
 }

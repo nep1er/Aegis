@@ -51,8 +51,12 @@
     </Window.Resources>
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="7*"/>
+            <ColumnDefinition Width="93*"/>
+        </Grid.ColumnDefinitions>
         <!-- Основной layout (показывается только после входа) -->
-        <Grid Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Grid Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="*"/>
@@ -81,13 +85,6 @@
                             BorderThickness="0"
                             Command="{Binding NavigateToDashboardCommand}"/>
 
-                    <Button Content="Оформление" 
-                            Height="50"
-                            Margin="10,5"
-                            Background="#34495E"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Command="{Binding NavigateToReceptionCommand}"/>
 
                     <Button Content="Выдача" 
                             Height="50"
@@ -118,7 +115,7 @@
                                HorizontalAlignment="Center"
                                Margin="0,30,0,50"/>
 
-                    
+
 
                     <Button Content="Парковки" 
                             Height="50"
@@ -205,6 +202,6 @@
 
         <!-- Экран входа (показывается до авторизации) -->
         <ContentControl Content="{Binding CurrentViewModel}"
-                        Visibility="{Binding IsLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}" Grid.ColumnSpan="2"/>
     </Grid>
 </Window>
