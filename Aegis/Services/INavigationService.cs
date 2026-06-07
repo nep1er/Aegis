@@ -1,14 +1,9 @@
 ﻿using Aegis.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Aegis.Services
+namespace Aegis.Services;
+
+public interface INavigationService
 {
-    public interface INavigationService
-    {
-        void NavigateTo<TViewModel>() where TViewModel : ViewModelBase;
-    }
+    void NavigateTo<TViewModel>() where TViewModel : ViewModelBase;
+    void NavigateTo<TViewModel>(TViewModel viewModel) where TViewModel : ViewModelBase;
 }

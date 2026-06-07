@@ -14,7 +14,7 @@ namespace Aegis.Data
 
         public AppDbContext()
         {
-            _connectionString = "Host=localhost;Database=Aegis;Username=postgres;Password=Q4UMQ4XA";
+            _connectionString = "Host=localhost;Database=Aegis;Username=postgres;Password=12345";
         }
 
         public NpgsqlConnection CreateConnection()

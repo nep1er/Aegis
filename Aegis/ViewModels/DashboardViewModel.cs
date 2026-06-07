@@ -1,8 +1,8 @@
-﻿using Aegis.Commands;
+﻿using System.Collections.ObjectModel;
+using Aegis.Commands;
 using Aegis.Models;
 using Aegis.Services;
 using Aegis.Services.Repositories;
-using System.Collections.ObjectModel;
 
 namespace Aegis.ViewModels;
 
@@ -10,11 +10,17 @@ public class DashboardViewModel : ViewModelBase
 {
     private ObservableCollection<ParkingDisplayModel> _parkings = new();
     private ParkingDisplayModel? _selectedParking;
+    private ParkingDisplayModel? _currentParking;
     private ObservableCollection<SpotDisplayModel> _spots = new();
+    private ObservableCollection<TariffInfo> _tariffs = new();
     private string _title = "Парковки";
 
     private readonly IParkingRepository _parkingRepository;
+    private readonly ITariffRepository _tariffRepository;
+    private readonly ISpotRepository _spotRepository;
+    private readonly IReceptionRepository _receptionRepository;  // ← ДОБАВЛЕНО
     private readonly IAuthService _authService;
+    private readonly INavigationService _navigationService;
 
     public ObservableCollection<ParkingDisplayModel> Parkings
     {
@@ -29,15 +35,29 @@ public class DashboardViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedParking, value))
             {
+                _currentParking = value;
                 LoadSpotsCommand.Execute(null);
+                LoadTariffsCommand.Execute(null);
             }
         }
+    }
+
+    public ParkingDisplayModel? CurrentParking
+    {
+        get => _currentParking;
+        private set => SetProperty(ref _currentParking, value);
     }
 
     public ObservableCollection<SpotDisplayModel> Spots
     {
         get => _spots;
         set => SetProperty(ref _spots, value);
+    }
+
+    public ObservableCollection<TariffInfo> Tariffs
+    {
+        get => _tariffs;
+        set => SetProperty(ref _tariffs, value);
     }
 
     public string Title
@@ -48,16 +68,29 @@ public class DashboardViewModel : ViewModelBase
 
     public RelayCommand LoadParkingsCommand { get; }
     public RelayCommand LoadSpotsCommand { get; }
+    public RelayCommand LoadTariffsCommand { get; }
+    public RelayCommand NavigateToReceptionCommand { get; }
 
-    public DashboardViewModel(IParkingRepository parkingRepository, IAuthService authService)
+    public DashboardViewModel(
+        IParkingRepository parkingRepository,
+        ITariffRepository tariffRepository,
+        ISpotRepository spotRepository,
+        IReceptionRepository receptionRepository,  // ← ДОБАВЛЕНО
+        IAuthService authService,
+        INavigationService navigationService)
     {
         _parkingRepository = parkingRepository;
+        _tariffRepository = tariffRepository;
+        _spotRepository = spotRepository;
+        _receptionRepository = receptionRepository;  // ← ДОБАВЛЕНО
         _authService = authService;
+        _navigationService = navigationService;
 
         LoadParkingsCommand = new RelayCommand(async _ => await LoadParkingsAsync());
         LoadSpotsCommand = new RelayCommand(async _ => await LoadSpotsAsync());
+        LoadTariffsCommand = new RelayCommand(async _ => await LoadTariffsAsync());
+        NavigateToReceptionCommand = new RelayCommand(_ => NavigateToReception(), _ => CanNavigateToReception());
 
-        // Загружаем данные при создании
         LoadParkingsCommand.Execute(null);
     }
 
@@ -90,5 +123,40 @@ public class DashboardViewModel : ViewModelBase
         {
             Spots.Add(spot);
         }
+    }
+
+    private async Task LoadTariffsAsync()
+    {
+        if (SelectedParking == null) return;
+
+        var tariffs = await _tariffRepository.GetTariffsForParkingAsync(SelectedParking.ParkingId);
+
+        Tariffs.Clear();
+        foreach (var tariff in tariffs)
+        {
+            Tariffs.Add(tariff);
+        }
+    }
+
+    private bool CanNavigateToReception()
+    {
+        return _currentParking != null;
+    }
+
+    private void NavigateToReception()
+    {
+        if (_currentParking == null) return;
+
+        // Передаём все зависимости через конструктор
+        var receptionVm = new ReceptionViewModel(
+            _currentParking,
+            _authService,
+            _navigationService,
+            _tariffRepository,
+            _spotRepository,           // ← используем инжектированный, а не новый!
+            _parkingRepository,
+            _receptionRepository);     // ← ДОБАВЛЕНО
+
+        _navigationService.NavigateTo(receptionVm);
     }
 }

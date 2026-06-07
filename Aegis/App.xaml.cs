@@ -38,6 +38,11 @@ public partial class App : Application
         services.AddTransient<AdminHistoryViewModel>();
         services.AddTransient<PaymentsHistoryViewModel>();
 
+        services.AddSingleton<ITariffRepository, TariffRepository>();
+        services.AddSingleton<ISpotRepository, SpotRepository>();
+        services.AddSingleton<IParkingRepository, ParkingRepository>();
+        services.AddSingleton<IReceptionRepository, ReceptionRepository>();
+
         services.AddSingleton<IParkingRepository, ParkingRepository>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAuthService, AuthService>();
