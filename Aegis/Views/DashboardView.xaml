@@ -63,20 +63,45 @@
                 BorderThickness="0"
                 Cursor="Hand"
                 Command="{Binding NavigateToReceptionCommand}"
-                Margin="0,0,0,20"/>
+                Margin="0,8,19,29"/>
 
         <!-- Таблица мест -->
         <DataGrid Grid.Row="2"
-          ItemsSource="{Binding Spots, Mode=TwoWay}"
-          AutoGenerateColumns="False"
-          IsReadOnly="True"
-          CanUserAddRows="False"
-          CanUserDeleteRows="False"
-          HeadersVisibility="Column"
-          GridLinesVisibility="Horizontal"
-          Background="White"
-          BorderBrush="#BDC3C7"
-          BorderThickness="1">
+                  ItemsSource="{Binding Spots, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="Horizontal"
+                  Background="White"
+                  BorderBrush="#BDC3C7"
+                  BorderThickness="1">
+
+            <!-- Стиль заголовков -->
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#34495E"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Padding" Value="10,8"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+
+            <!-- Стиль строк с цветовой индикацией -->
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsOccupied}" Value="True">
+                            <Setter Property="Background" Value="#FFE5E5"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsOccupied}" Value="False">
+                            <Setter Property="Background" Value="#E8F8F5"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+
             <DataGrid.Columns>
                 <DataGridTextColumn Header="№ Места" Binding="{Binding Number}" Width="100"/>
                 <DataGridTextColumn Header="Тип" Binding="{Binding VehicleType}" Width="150"/>

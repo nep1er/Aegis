@@ -85,13 +85,6 @@
                             BorderThickness="0"
                             Command="{Binding NavigateToDashboardCommand}"/>
 
-                    <Button Content="Оформление" 
-                            Height="50"
-                            Margin="10,5"
-                            Background="#34495E"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Command="{Binding NavigateToReceptionCommand}"/>
 
                     <Button Content="Выдача" 
                             Height="50"

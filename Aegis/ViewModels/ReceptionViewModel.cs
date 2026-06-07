@@ -1,9 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
-using Aegis.Commands;
+﻿using Aegis.Commands;
 using Aegis.Models;
 using Aegis.Services;
 using Aegis.Services.Repositories;
+using Microsoft.Win32;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Media.Imaging;
+using System.Xml.Linq;
 
 namespace Aegis.ViewModels;
 
@@ -17,6 +22,7 @@ public class ReceptionViewModel : ViewModelBase
     private readonly IParkingRepository _parkingRepository;
     private readonly IReceptionRepository _receptionRepository;
 
+
     private string _title = "Оформление приемки";
     private string _operatorName = string.Empty;
     private string _parkingAddress = string.Empty;
@@ -28,6 +34,16 @@ public class ReceptionViewModel : ViewModelBase
     private SpotDisplayModel? _selectedSpot;
     private decimal _currentTariff;
     private DateTime _admissionDate = DateTime.Now;
+
+    private ObservableCollection<PhotoPreviewModel> _photos = new();
+    private int? _createdParkingRecordId;
+
+    public ObservableCollection<PhotoPreviewModel> Photos
+    {
+        get => _photos;
+        set => SetProperty(ref _photos, value);
+    }
+
 
     public string Title
     {
@@ -101,6 +117,8 @@ public class ReceptionViewModel : ViewModelBase
     public RelayCommand LoadFreeSpotsCommand { get; }
     public RelayCommand SaveReceptionCommand { get; }
     public RelayCommand CancelCommand { get; }
+    public RelayCommand AddPhotoCommand { get; }
+    public RelayCommand RemovePhotoCommand { get; }
 
     public ReceptionViewModel(
         ParkingDisplayModel parking,
@@ -122,6 +140,14 @@ public class ReceptionViewModel : ViewModelBase
         LoadVehicleTypesCommand = new RelayCommand(async _ => await LoadVehicleTypesAsync());
         LoadFreeSpotsCommand = new RelayCommand(async _ => await LoadFreeSpotsAsync());
         SaveReceptionCommand = new RelayCommand(async _ => await SaveReceptionAsync());
+
+        AddPhotoCommand = new RelayCommand(_ => AddPhoto());
+        RemovePhotoCommand = new RelayCommand(param =>
+        {
+            if (param is PhotoPreviewModel photo)
+                RemovePhoto(photo);
+        });
+
         CancelCommand = new RelayCommand(_ => Cancel());
 
         Initialize();
@@ -208,29 +234,31 @@ public class ReceptionViewModel : ViewModelBase
 
         try
         {
-            // Получаем ID статуса "На стоянке"
-            int vehicleStatusId = 1; // По умолчанию
-
-            // Создаём данные для сохранения
             var receptionData = new ReceptionData
             {
                 LicensePlate = LicensePlate,
                 SpotId = SelectedSpot.Id,
                 VehicleTypeId = SelectedVehicleType.Id,
                 OperatorId = _authService.CurrentUser.Id,
-                VehicleId = null, // Будет найден или создан в репозитории
-                VehicleStatusId = vehicleStatusId,
+                VehicleId = null,
+                VehicleStatusId = 1,
                 AdmissionDate = DateTime.Now
             };
 
-            // Сохраняем в БД
-            var parkingRecordId = await _receptionRepository.CreateReceptionAsync(receptionData);
+            // Сохраняем приёмку
+            _createdParkingRecordId = await _receptionRepository.CreateReceptionAsync(receptionData);
+
+            // Сохраняем фото
+            foreach (var photo in Photos)
+            {
+                await _receptionRepository.AddVehiclePhotoAsync(_createdParkingRecordId.Value, photo.PhotoData, photo.Description);
+            }
 
             MessageBox.Show(
                 $"Автомобиль {LicensePlate} принят на парковку!\n" +
                 $"Место: {SelectedSpot.Number}\n" +
                 $"Тариф: {CurrentTariff} ₽/час\n" +
-                $"ID записи: {parkingRecordId}",
+                $"Фото: {Photos.Count} шт.",
                 "Успех",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -239,13 +267,50 @@ public class ReceptionViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                $"Ошибка при сохранении: {ex.Message}",
-                "Ошибка",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка",
+                MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+
+    private void AddPhoto()
+    {
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "Image files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp|All files (*.*)|*.*",
+            Title = "Выберите фотографию автомобиля"
+        };
+
+        if (openFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                var photoData = File.ReadAllBytes(openFileDialog.FileName);
+                var preview = new PhotoPreviewModel
+                {
+                    PhotoData = photoData,
+                    FileName = Path.GetFileName(openFileDialog.FileName),
+                    Description = $"Фото {Photos.Count + 1}"
+                };
+
+                Photos.Add(preview);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки фото: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void RemovePhoto(PhotoPreviewModel? photo)
+    {
+        if (photo != null && Photos.Contains(photo))
+        {
+            Photos.Remove(photo);
+        }
+    }
+
+    
 
     private void Cancel()
     {
@@ -257,4 +322,26 @@ public class VehicleTypeItem
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+}
+
+public class PhotoPreviewModel
+{
+    public byte[] PhotoData { get; set; } = Array.Empty<byte>();
+    public string FileName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+
+    // Для отображения в WPF
+    public BitmapSource PreviewImage
+    {
+        get
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.StreamSource = new MemoryStream(PhotoData);
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
+            return bitmap;
+        }
+    }
 }

@@ -117,36 +117,36 @@ public class HistoryRepository : IHistoryRepository
         await connection.OpenAsync();
 
         using var command = new NpgsqlCommand(@"
-            SELECT 
-                pr.id,
-                v.license_plate,
-                v.vin,
-                v.brand,
-                v.model,
-                vt.type,
-                s.number,
-                p.city || ', ' || p.street || ', ' || p.building,
-                pr.admission_date,
-                u1.full_name,
-                rh.release_date,
-                u2.full_name,
-                dt.type,
-                rh.document_number,
-                rh.storage_fee,
-                rh.tow_fine,
-                rh.storage_fee + rh.tow_fine,
-                pm.receipt_number
-            FROM ""parkingrecords"" pr
-            JOIN ""spots"" s ON pr.spot_id = s.id
-            JOIN ""parkings"" p ON s.parking_id = p.id
-            JOIN ""vehicles"" v ON pr.vehicle_id = v.id
-            JOIN ""vehicletypes"" vt ON pr.vehicle_type_id = vt.id
-            JOIN ""users"" u1 ON pr.operator_id = u1.id
-            LEFT JOIN ""releasehistory"" rh ON rh.parking_record_id = pr.id
-            LEFT JOIN ""users"" u2 ON rh.operator_id = u2.id
-            LEFT JOIN ""documenttypes"" dt ON rh.document_type_id = dt.id
-            LEFT JOIN ""payments"" pm ON pm.parking_record_id = pr.id
-            WHERE pr.id = @id",
+        SELECT 
+            pr.id,
+            v.license_plate,
+            v.vin,
+            v.brand,
+            v.model,
+            vt.type,
+            s.number,
+            p.city || ', ' || p.street || ', ' || p.building,
+            pr.admission_date,
+            u1.full_name,
+            rh.release_date,
+            u2.full_name,
+            dt.type,
+            rh.document_number,
+            rh.storage_fee,
+            rh.tow_fine,
+            rh.storage_fee + rh.tow_fine,
+            pm.receipt_number
+        FROM ""parkingrecords"" pr
+        JOIN ""spots"" s ON pr.spot_id = s.id
+        JOIN ""parkings"" p ON s.parking_id = p.id
+        JOIN ""vehicles"" v ON pr.vehicle_id = v.id
+        JOIN ""vehicletypes"" vt ON pr.vehicle_type_id = vt.id
+        JOIN ""users"" u1 ON pr.operator_id = u1.id
+        LEFT JOIN ""releasehistory"" rh ON rh.parking_record_id = pr.id
+        LEFT JOIN ""users"" u2 ON rh.operator_id = u2.id
+        LEFT JOIN ""documenttypes"" dt ON rh.document_type_id = dt.id
+        LEFT JOIN ""payments"" pm ON pm.parking_record_id = pr.id
+        WHERE pr.id = @id",
             connection);
 
         command.Parameters.AddWithValue("id", parkingRecordId);
@@ -155,7 +155,7 @@ public class HistoryRepository : IHistoryRepository
 
         if (await reader.ReadAsync())
         {
-            return new HistoryDetailsModel
+            var details = new HistoryDetailsModel
             {
                 ParkingRecordId = reader.GetInt32(0),
                 LicensePlate = reader.GetString(1),
@@ -174,10 +174,43 @@ public class HistoryRepository : IHistoryRepository
                 StorageFee = reader.IsDBNull(14) ? (decimal?)null : reader.GetDecimal(14),
                 TowFine = reader.IsDBNull(15) ? (decimal?)null : reader.GetDecimal(15),
                 TotalAmount = reader.IsDBNull(16) ? (decimal?)null : reader.GetDecimal(16),
-                ReceiptNumber = reader.IsDBNull(17) ? null : reader.GetString(17)
+                ReceiptNumber = reader.IsDBNull(17) ? null : reader.GetString(17),
+                Photos = await GetVehiclePhotosAsync(parkingRecordId)  // ← ЗАГРУЖАЕМ ФОТО
             };
+
+            return details;
         }
 
         return null;
+    }
+
+    public async Task<IEnumerable<VehiclePhotoModel>> GetVehiclePhotosAsync(int parkingRecordId)
+    {
+        var photos = new List<VehiclePhotoModel>();
+
+        using var connection = _dbContext.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new NpgsqlCommand(
+    @"SELECT id, photo, description 
+      FROM ""vehiclephotos"" 
+      WHERE parking_record_id = @parkingRecordId
+      ORDER BY id",
+    connection);
+        command.Parameters.AddWithValue("parkingRecordId", parkingRecordId);
+
+        using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            photos.Add(new VehiclePhotoModel
+            {
+                Id = reader.GetInt32(0),
+                PhotoData = reader.IsDBNull(1) ? Array.Empty<byte>() : (byte[])reader.GetValue(1),
+                Description = reader.IsDBNull(2) ? null : reader.GetString(2)
+            });
+        }
+
+        return photos;
     }
 }

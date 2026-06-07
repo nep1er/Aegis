@@ -70,6 +70,37 @@
                          BorderThickness="1"/>
             </StackPanel>
 
+            <StackPanel Grid.Row="5" Margin="0,0,0,20">
+                <TextBlock Text="Фотографии автомобиля" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <ItemsControl ItemsSource="{Binding Photos}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="White" BorderBrush="#BDC3C7" BorderThickness="1" 
+                        CornerRadius="5" Margin="5" Padding="5" Width="150">
+                                <StackPanel>
+                                    <Image Source="{Binding PreviewImage}" Height="100" Stretch="UniformToFill"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                                    <Button Content="✕ Удалить" Height="25" Margin="0,5,0,0"
+                                Background="#E74C3C" Foreground="White" BorderThickness="0"
+                                Command="{Binding DataContext.RemovePhotoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button Content="📷 Добавить фото" Height="40" Width="200" HorizontalAlignment="Left"
+            Background="#3498DB" Foreground="White" BorderThickness="0"
+            Command="{Binding AddPhotoCommand}"/>
+            </StackPanel>
+
             <!-- Тип авто -->
             <StackPanel Grid.Row="3" Margin="0,0,0,20">
                 <TextBlock Text="Тип автомобиля *" 

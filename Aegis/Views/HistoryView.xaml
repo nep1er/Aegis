@@ -7,12 +7,12 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:OperationTypeToColorConverter x:Key="OperationTypeToColorConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:BytesToImageConverter x:Key="BytesToImageConverter"/>
     </UserControl.Resources>
 
-    <!-- ⚠️ ВОТ ЭТОТ <Grid> БЫЛ ПРОПУЩЕН! -->
+    
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -69,7 +69,7 @@
         </Border>
 
         <!-- Список истории -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding HistoryItems}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -145,73 +145,28 @@
         </ScrollViewer>
 
         <!-- Развёрнутая информация -->
-        <Border Grid.Row="2" Background="#F8F9F9" BorderBrush="#3498DB" BorderThickness="2"
+        <Border Grid.Row="1" Background="#F8F9F9" BorderBrush="#3498DB" BorderThickness="2"
                 CornerRadius="10" Padding="25" Margin="0,0,0,20"
                 Visibility="{Binding IsDetailsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Заголовок -->
-                <Grid Grid.Row="0" Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="Детали операции" FontSize="24" FontWeight="Bold"/>
-                    <Button Grid.Column="1" Content="✕ Закрыть"
-                            Width="120" Height="35"
-                            Background="#E74C3C" Foreground="White"
-                            BorderThickness="0" Cursor="Hand"
-                            Command="{Binding HideDetailsCommand}"/>
-                </Grid>
-
-                <!-- Информация об авто -->
-                <Border Grid.Row="1" Background="White" Padding="20" CornerRadius="5" Margin="0,0,0,15">
-                    <Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Заголовок -->
+                    <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Гос. номер" FontWeight="Bold" Foreground="#7F8C8D"/>
-                            <TextBlock Text="{Binding SelectedDetails.LicensePlate}" FontSize="18" Margin="0,5,0,15"/>
-
-                            <TextBlock Text="VIN" FontWeight="Bold" Foreground="#7F8C8D"/>
-                            <TextBlock Text="{Binding SelectedDetails.Vin, TargetNullValue='Не указан'}" FontSize="16" Margin="0,5,0,15"/>
-
-                            <TextBlock Text="Автомобиль" FontWeight="Bold" Foreground="#7F8C8D"/>
-                            <TextBlock FontSize="16" Margin="0,5,0,15">
-                                <Run Text="{Binding SelectedDetails.Brand, TargetNullValue='', Mode=OneWay}"/>
-                                <Run Text=" "/>
-                                <Run Text="{Binding SelectedDetails.Model, TargetNullValue='', Mode=OneWay}"/>
-                            </TextBlock>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="Тип" FontWeight="Bold" Foreground="#7F8C8D"/>
-                            <TextBlock Text="{Binding SelectedDetails.VehicleType}" FontSize="16" Margin="0,5,0,15"/>
-
-                            <TextBlock Text="Место" FontWeight="Bold" Foreground="#7F8C8D"/>
-                            <TextBlock Text="{Binding SelectedDetails.SpotNumber}" FontSize="16" Margin="0,5,0,15"/>
-
-                            <TextBlock Text="Парковка" FontWeight="Bold" Foreground="#7F8C8D"/>
-                            <TextBlock Text="{Binding SelectedDetails.ParkingAddress}" FontSize="16"/>
-                        </StackPanel>
+                        <TextBlock Text="Детали операции" FontSize="24" FontWeight="Bold"/>
+                        <Button Grid.Column="1" Content="✕ Закрыть"
+                                Width="120" Height="35"
+                                Background="#E74C3C" Foreground="White"
+                                BorderThickness="0" Cursor="Hand"
+                                Command="{Binding HideDetailsCommand}"/>
                     </Grid>
-                </Border>
 
-                <!-- Приёмка -->
-                <Border Grid.Row="2" Background="#E8F8F5" Padding="20" CornerRadius="5" Margin="0,0,0,15">
-                    <StackPanel>
-                        <TextBlock Text="ПРИЁМКА" FontSize="18" FontWeight="Bold" Foreground="#27AE60" Margin="0,0,0,10"/>
+                    <!-- Информация об авто -->
+                    <Border Background="White" Padding="20" CornerRadius="5" Margin="0,0,0,15">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -219,92 +174,166 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Дата и время" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock Text="{Binding SelectedDetails.AdmissionDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" 
-                                           FontSize="16" Margin="0,5,0,0"/>
-                            </StackPanel>
+                                <TextBlock Text="Гос. номер" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                <TextBlock Text="{Binding SelectedDetails.LicensePlate}" FontSize="18" Margin="0,5,0,15"/>
 
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Оператор" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock Text="{Binding SelectedDetails.AdmissionOperator}" 
-                                           FontSize="16" Margin="0,5,0,0"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                                <TextBlock Text="VIN" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                <TextBlock Text="{Binding SelectedDetails.Vin, TargetNullValue='Не указан'}" FontSize="16" Margin="0,5,0,15"/>
 
-                <!-- Выдача -->
-                <Border Grid.Row="3" Background="#FFF3CD" Padding="20" CornerRadius="5" Margin="0,0,0,15"
-                        Visibility="{Binding SelectedDetails.ReleaseDate, Converter={StaticResource NullToVisibilityConverter}}">
-                    <StackPanel>
-                        <TextBlock Text="ВЫДАЧА" FontSize="18" FontWeight="Bold" Foreground="#E67E22" Margin="0,0,0,10"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Дата и время" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock Text="{Binding SelectedDetails.ReleaseDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" 
-                                           FontSize="16" Margin="0,5,0,0"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,10">
-                                <TextBlock Text="Оператор" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock Text="{Binding SelectedDetails.ReleaseOperator, TargetNullValue=''}" 
-                                           FontSize="16" Margin="0,5,0,0"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="Документ" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock FontSize="16" Margin="0,5,0,0">
-                                    <Run Text="{Binding SelectedDetails.DocumentType, TargetNullValue='', Mode=OneWay}"/>
-                                    <Run Text=" №"/>
-                                    <Run Text="{Binding SelectedDetails.DocumentNumber, TargetNullValue='', Mode=OneWay}"/>
+                                <TextBlock Text="Автомобиль" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                <TextBlock FontSize="16" Margin="0,5,0,15">
+                                    <Run Text="{Binding SelectedDetails.Brand, TargetNullValue='', Mode=OneWay}"/>
+                                    <Run Text=" "/>
+                                    <Run Text="{Binding SelectedDetails.Model, TargetNullValue='', Mode=OneWay}"/>
                                 </TextBlock>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,10">
-                                <TextBlock Text="Чек" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock Text="{Binding SelectedDetails.ReceiptNumber, TargetNullValue='Не указан'}" 
-                                           FontSize="16" Margin="0,5,0,0"/>
-                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Тип" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                <TextBlock Text="{Binding SelectedDetails.VehicleType}" FontSize="16" Margin="0,5,0,15"/>
 
-                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,10">
-                                <TextBlock Text="За стоянку" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock Text="{Binding SelectedDetails.StorageFee, StringFormat='{}{0} ₽'}" 
-                                           FontSize="18" FontWeight="Bold" Foreground="#27AE60" Margin="0,5,0,0"/>
-                            </StackPanel>
+                                <TextBlock Text="Место" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                <TextBlock Text="{Binding SelectedDetails.SpotNumber}" FontSize="16" Margin="0,5,0,15"/>
 
-                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,10">
-                                <TextBlock Text="Штраф эвакуации" FontWeight="Bold" Foreground="#7F8C8D"/>
-                                <TextBlock Text="{Binding SelectedDetails.TowFine, StringFormat='{}{0} ₽'}" 
-                                           FontSize="18" FontWeight="Bold" Foreground="#E67E22" Margin="0,5,0,0"/>
+                                <TextBlock Text="Парковка" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                <TextBlock Text="{Binding SelectedDetails.ParkingAddress}" FontSize="16"/>
                             </StackPanel>
-
-                            <Border Grid.Row="3" Grid.ColumnSpan="2" Background="#C0392B" Padding="15" CornerRadius="5" Margin="0,10,0,0">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="ИТОГО К ОПЛАТЕ:" FontSize="18" FontWeight="Bold" Foreground="White"/>
-                                    <TextBlock Grid.Column="1" 
-                                               Text="{Binding SelectedDetails.TotalAmount, StringFormat='{}{0} ₽'}" 
-                                               FontSize="24" FontWeight="Bold" Foreground="White"/>
-                                </Grid>
-                            </Border>
                         </Grid>
-                    </StackPanel>
-                </Border>
-            </Grid>
+                    </Border>
+
+                    <!-- Приёмка -->
+                    <Border Background="#E8F8F5" Padding="20" CornerRadius="5" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="ПРИЁМКА" FontSize="18" FontWeight="Bold" Foreground="#27AE60" Margin="0,0,0,10"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Дата и время" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock Text="{Binding SelectedDetails.AdmissionDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" 
+                                               FontSize="16" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Оператор" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock Text="{Binding SelectedDetails.AdmissionOperator}" 
+                                               FontSize="16" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Выдача -->
+                    <Border Background="#FFF3CD" Padding="20" CornerRadius="5" Margin="0,0,0,15"
+                            Visibility="{Binding SelectedDetails.ReleaseDate, Converter={StaticResource NullToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="ВЫДАЧА" FontSize="18" FontWeight="Bold" Foreground="#E67E22" Margin="0,0,0,10"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,10">
+                                    <TextBlock Text="Дата и время" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock Text="{Binding SelectedDetails.ReleaseDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" 
+                                               FontSize="16" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,10">
+                                    <TextBlock Text="Оператор" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock Text="{Binding SelectedDetails.ReleaseOperator, TargetNullValue=''}" 
+                                               FontSize="16" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,10">
+                                    <TextBlock Text="Документ" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock FontSize="16" Margin="0,5,0,0">
+                                        <Run Text="{Binding SelectedDetails.DocumentType, TargetNullValue='', Mode=OneWay}"/>
+                                        <Run Text=" №"/>
+                                        <Run Text="{Binding SelectedDetails.DocumentNumber, TargetNullValue='', Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,10">
+                                    <TextBlock Text="Чек" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock Text="{Binding SelectedDetails.ReceiptNumber, TargetNullValue='Не указан'}" 
+                                               FontSize="16" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,10">
+                                    <TextBlock Text="За стоянку" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock Text="{Binding SelectedDetails.StorageFee, StringFormat='{}{0} ₽'}" 
+                                               FontSize="18" FontWeight="Bold" Foreground="#27AE60" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,10">
+                                    <TextBlock Text="Штраф эвакуации" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                    <TextBlock Text="{Binding SelectedDetails.TowFine, StringFormat='{}{0} ₽'}" 
+                                               FontSize="18" FontWeight="Bold" Foreground="#E67E22" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <Border Grid.Row="3" Grid.ColumnSpan="2" Background="#C0392B" Padding="15" CornerRadius="5" Margin="0,10,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="ИТОГО К ОПЛАТЕ:" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                        <TextBlock Grid.Column="1" 
+                                                   Text="{Binding SelectedDetails.TotalAmount, StringFormat='{}{0} ₽'}" 
+                                                   FontSize="24" FontWeight="Bold" Foreground="White"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Фотографии -->
+                    <Border Background="White" Padding="20" CornerRadius="5"
+                            Visibility="{Binding SelectedDetails.Photos, Converter={StaticResource NullToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="ФОТОГРАФИИ АВТОМОБИЛЯ" FontSize="18" FontWeight="Bold" 
+                                       Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                            <ItemsControl ItemsSource="{Binding SelectedDetails.Photos}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#F8F9F9" BorderBrush="#BDC3C7" BorderThickness="1" 
+                                                CornerRadius="5" Margin="5" Padding="10" Width="200">
+                                            <StackPanel>
+                                                <Image Source="{Binding PhotoData, Converter={StaticResource BytesToImageConverter}}" 
+                                                       Height="150" Stretch="UniformToFill"
+                                                       HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Description}" 
+                                                           FontSize="12" 
+                                                           Margin="0,10,0,0"
+                                                           TextWrapping="Wrap"
+                                                           HorizontalAlignment="Center"/>
+                                                
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
     </Grid>
 </UserControl>

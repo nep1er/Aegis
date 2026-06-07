@@ -5,6 +5,7 @@ namespace Aegis.Services.Repositories;
 public interface IReceptionRepository
 {
     Task<int> CreateReceptionAsync(ReceptionData data);
+    Task<int> AddVehiclePhotoAsync(int parkingRecordId, byte[] photoData, string? description);
 }
 
 public class ReceptionData

@@ -12,6 +12,24 @@ public class ReceptionRepository : IReceptionRepository
         _dbContext = dbContext;
     }
 
+    public async Task<int> AddVehiclePhotoAsync(int parkingRecordId, byte[] photoData, string? description)
+    {
+        using var connection = _dbContext.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new NpgsqlCommand(
+            @"INSERT INTO ""vehiclephotos"" (parking_record_id, photo, description) 
+          VALUES (@parkingRecordId, @photo, @description)
+          RETURNING id",
+            connection);
+
+        command.Parameters.AddWithValue("parkingRecordId", parkingRecordId);
+        command.Parameters.AddWithValue("photo", photoData);
+        command.Parameters.AddWithValue("description", string.IsNullOrWhiteSpace(description) ? DBNull.Value : description);
+
+        return Convert.ToInt32(await command.ExecuteScalarAsync());
+    }
+
     public async Task<int> CreateReceptionAsync(ReceptionData data)
     {
         using var connection = _dbContext.CreateConnection();
@@ -83,4 +101,6 @@ public class ReceptionRepository : IReceptionRepository
             throw;
         }
     }
+
+
 }

@@ -28,5 +28,7 @@ namespace Aegis.Models
         public decimal? TowFine { get; set; }
         public decimal? TotalAmount { get; set; }
         public string? ReceiptNumber { get; set; }
+
+        public IEnumerable<VehiclePhotoModel> Photos { get; set; } = new List<VehiclePhotoModel>();
     }
 }
