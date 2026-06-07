@@ -1,4 +1,5 @@
-﻿using Aegis.ViewModels;
+﻿using Aegis.Models;
+using Aegis.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Aegis.Services;
@@ -35,5 +36,13 @@ public class NavigationService : INavigationService
             throw new InvalidOperationException("MainViewModel не установлен!");
 
         _mainViewModel.CurrentViewModel = viewModel;
+    }
+
+    private ParkingDisplayModel? _currentParking;
+
+    public void SetCurrentParking(ParkingDisplayModel? parking)
+    {
+        _currentParking = parking;
+        _mainViewModel?.SetCurrentParking(parking);
     }
 }

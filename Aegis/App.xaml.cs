@@ -42,7 +42,7 @@ public partial class App : Application
         services.AddSingleton<ISpotRepository, SpotRepository>();
         services.AddSingleton<IParkingRepository, ParkingRepository>();
         services.AddSingleton<IReceptionRepository, ReceptionRepository>();
-
+        services.AddSingleton<IReleaseRepository, ReleaseRepository>();
         services.AddSingleton<IParkingRepository, ParkingRepository>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAuthService, AuthService>();

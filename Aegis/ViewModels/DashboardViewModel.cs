@@ -36,6 +36,11 @@ public class DashboardViewModel : ViewModelBase
             if (SetProperty(ref _selectedParking, value))
             {
                 _currentParking = value;
+                // Обновляем в MainViewModel
+                if (_navigationService is NavigationService navService)
+                {
+                    navService.SetCurrentParking(value);
+                }
                 LoadSpotsCommand.Execute(null);
                 LoadTariffsCommand.Execute(null);
             }
@@ -142,6 +147,8 @@ public class DashboardViewModel : ViewModelBase
     {
         return _currentParking != null;
     }
+
+
 
     private void NavigateToReception()
     {
