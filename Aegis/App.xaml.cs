@@ -50,6 +50,9 @@ public partial class App : Application
 
         services.AddSingleton<IUserRepository, UserRepository>();
 
+        services.AddSingleton<IAnalyticsRepository, AnalyticsRepository>();
+        services.AddTransient<AnalyticsViewModel>();
+
         services.AddSingleton<IAuthService, AuthService>();
         services.AddSingleton<AppDbContext>();
 
