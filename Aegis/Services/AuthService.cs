@@ -58,6 +58,38 @@ public class AuthService : IAuthService
         return null;
     }
 
+    public async Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword)
+    {
+        using var connection = _dbContext.CreateConnection();
+        await connection.OpenAsync();
+
+        // 1. Получаем текущий хеш пароля
+        using var getCmd = new NpgsqlCommand(
+            @"SELECT password FROM ""users"" WHERE id = @userId",
+            connection);
+        getCmd.Parameters.AddWithValue("userId", userId);
+
+        var currentHash = await getCmd.ExecuteScalarAsync();
+        if (currentHash == null)
+            return false;
+
+        // 2. Проверяем старый пароль
+        if (!BCrypt.Net.BCrypt.Verify(oldPassword, currentHash.ToString()!))
+            return false;
+
+        // 3. Хешируем новый пароль и сохраняем
+        var newHash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: 12);
+
+        using var updateCmd = new NpgsqlCommand(
+            @"UPDATE ""users"" SET password = @password WHERE id = @userId",
+            connection);
+        updateCmd.Parameters.AddWithValue("password", newHash);
+        updateCmd.Parameters.AddWithValue("userId", userId);
+
+        var rowsAffected = await updateCmd.ExecuteNonQueryAsync();
+        return rowsAffected > 0;
+    }
+
     public void Logout()
     {
         CurrentUser = null;

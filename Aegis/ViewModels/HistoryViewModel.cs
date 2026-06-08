@@ -1,8 +1,8 @@
-﻿using Aegis.Commands;
+﻿using System.Collections.ObjectModel;
+using Aegis.Commands;
 using Aegis.Models;
 using Aegis.Services;
 using Aegis.Services.Repositories;
-using System.Collections.ObjectModel;
 
 namespace Aegis.ViewModels;
 
@@ -10,6 +10,7 @@ public class HistoryViewModel : ViewModelBase
 {
     private readonly IHistoryRepository _historyRepository;
     private readonly IAuthService _authService;
+    private readonly IParkingRepository _parkingRepository;
 
     private ObservableCollection<HistoryItemModel> _historyItems = new();
     private HistoryDetailsModel? _selectedDetails;
@@ -20,6 +21,11 @@ public class HistoryViewModel : ViewModelBase
     private string _vinFilter = string.Empty;
     private DateTime _dateFrom = DateTime.Now.AddMonths(-1);
     private DateTime _dateTo = DateTime.Now;
+
+    // Фильтр по парковке (для операторов)
+    private ObservableCollection<ParkingDisplayModel> _parkings = new();
+    private ParkingDisplayModel? _selectedParking;
+    private bool _isOperator;
 
     public ObservableCollection<HistoryItemModel> HistoryItems
     {
@@ -63,29 +69,99 @@ public class HistoryViewModel : ViewModelBase
         set => SetProperty(ref _dateTo, value);
     }
 
+    public ObservableCollection<ParkingDisplayModel> Parkings
+    {
+        get => _parkings;
+        set => SetProperty(ref _parkings, value);
+    }
+
+    public ParkingDisplayModel? SelectedParking
+    {
+        get => _selectedParking;
+        set
+        {
+            if (SetProperty(ref _selectedParking, value))
+            {
+                LoadHistoryCommand.Execute(null);
+            }
+        }
+    }
+
+    public bool IsOperator
+    {
+        get => _isOperator;
+        set => SetProperty(ref _isOperator, value);
+    }
+
     public RelayCommand LoadHistoryCommand { get; }
     public RelayCommand ClearFiltersCommand { get; }
-    public RelayCommand ShowDetailsCommand { get; }  // ← Убрали <HistoryItemModel>
+    public RelayCommand ShowDetailsCommand { get; }
     public RelayCommand HideDetailsCommand { get; }
 
-    public HistoryViewModel(IHistoryRepository historyRepository, IAuthService authService)
+    public HistoryViewModel(
+        IHistoryRepository historyRepository,
+        IAuthService authService,
+        IParkingRepository parkingRepository)
     {
         _historyRepository = historyRepository;
         _authService = authService;
+        _parkingRepository = parkingRepository;
 
         LoadHistoryCommand = new RelayCommand(async _ => await LoadHistoryAsync());
         ClearFiltersCommand = new RelayCommand(_ => ClearFilters());
-
-        // ← ИСПРАВЛЕНО: явное приведение типов
         ShowDetailsCommand = new RelayCommand(async param =>
         {
             if (param is HistoryItemModel item)
                 await ShowDetailsAsync(item);
         });
-
         HideDetailsCommand = new RelayCommand(_ => HideDetails());
 
-        LoadHistoryCommand.Execute(null);
+        Initialize();
+    }
+
+    private void Initialize()
+    {
+        // Проверяем роль пользователя
+        IsOperator = _authService.CurrentUser?.Role?.Name != "Администратор";
+
+        if (IsOperator && _authService.CurrentUser != null)
+        {
+            // Загружаем парковки оператора
+            LoadOperatorParkingsAsync();
+        }
+        else
+        {
+            // Для админа загружаем все парковки
+            LoadAllParkingsAsync();
+        }
+    }
+
+    private async Task LoadOperatorParkingsAsync()
+    {
+        var parkings = await _parkingRepository.GetParkingsForOperatorAsync(_authService.CurrentUser!.Id);
+        Parkings.Clear();
+        foreach (var p in parkings)
+            Parkings.Add(p);
+
+        if (Parkings.Any())
+            SelectedParking = Parkings.First();
+    }
+
+    private async Task LoadAllParkingsAsync()
+    {
+        var parkings = await _parkingRepository.GetAllParkingsAsync();
+        Parkings.Clear();
+        foreach (var p in parkings)
+            Parkings.Add(p);
+
+        // Добавляем пункт "Все парковки"
+        Parkings.Insert(0, new ParkingDisplayModel
+        {
+            ParkingId = 0,
+            Address = "Все парковки"
+        });
+
+        SelectedParking = Parkings.First();
     }
 
     private async Task LoadHistoryAsync()
@@ -95,7 +171,8 @@ public class HistoryViewModel : ViewModelBase
             LicensePlate = string.IsNullOrWhiteSpace(LicensePlateFilter) ? null : LicensePlateFilter,
             Vin = string.IsNullOrWhiteSpace(VinFilter) ? null : VinFilter,
             DateFrom = DateFrom,
-            DateTo = DateTo
+            DateTo = DateTo,
+            ParkingId = SelectedParking?.ParkingId == 0 ? null : SelectedParking?.ParkingId
         };
 
         var items = await _historyRepository.GetHistoryAsync(filter);

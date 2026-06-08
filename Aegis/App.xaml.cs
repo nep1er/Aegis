@@ -45,6 +45,9 @@ public partial class App : Application
         services.AddSingleton<IReleaseRepository, ReleaseRepository>();
         services.AddSingleton<IParkingRepository, ParkingRepository>();
         services.AddSingleton<INavigationService, NavigationService>();
+
+        services.AddSingleton<IUserRepository, UserRepository>();
+
         services.AddSingleton<IAuthService, AuthService>();
         services.AddSingleton<AppDbContext>();
 

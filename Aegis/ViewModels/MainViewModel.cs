@@ -69,7 +69,7 @@ public class MainViewModel : ViewModelBase
     public RelayCommand NavigateToAnalyticsCommand { get; }
     public RelayCommand NavigateToAdminHistoryCommand { get; }
     public RelayCommand NavigateToPaymentsHistoryCommand { get; }
-
+    public RelayCommand OpenSettingsCommand { get; }
     public RelayCommand LogoutCommand { get; }
 
     public MainViewModel(
@@ -82,6 +82,8 @@ public class MainViewModel : ViewModelBase
         _authService = authService;
         _releaseRepository = releaseRepository;   // ← ДОБАВЛЕНО
         _tariffRepository = tariffRepository;     // ← ДОБАВЛЕНО
+
+        OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
 
         // Команды оператора
         NavigateToDashboardCommand = new RelayCommand(_ => _navigationService.NavigateTo<DashboardViewModel>());
@@ -103,6 +105,12 @@ public class MainViewModel : ViewModelBase
     public void Initialize()
     {
         ShowLogin();
+    }
+
+    private void OpenSettings()
+    {
+        var settingsWindow = new Views.ChangePasswordWindow(_authService);
+        settingsWindow.ShowDialog();
     }
 
     private void ShowLogin()

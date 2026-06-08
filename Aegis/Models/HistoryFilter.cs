@@ -16,5 +16,6 @@ namespace Aegis.Models
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
         public string? OperationType { get; set; }
+        public int? ParkingId { get; set; }
     }
 }

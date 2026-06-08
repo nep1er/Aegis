@@ -20,57 +20,47 @@ public class HistoryRepository : IHistoryRepository
         await connection.OpenAsync();
 
         var sql = new System.Text.StringBuilder(@"
-            SELECT 
-                pr.id,
-                CASE WHEN pr.vehicle_status_id = 1 THEN 'Приёмка' ELSE 'Выдача' END as operation_type,
-                CASE WHEN pr.vehicle_status_id = 1 THEN pr.admission_date ELSE rh.release_date END as operation_date,
-                v.license_plate,
-                vt.type as vehicle_type,
-                s.number as spot_number,
-                u.full_name as operator_name,
-                rh.storage_fee + rh.tow_fine as amount
-            FROM ""parkingrecords"" pr
-            JOIN ""spots"" s ON pr.spot_id = s.id
-            JOIN ""vehicles"" v ON pr.vehicle_id = v.id
-            JOIN ""vehicletypes"" vt ON pr.vehicle_type_id = vt.id
-            JOIN ""users"" u ON pr.operator_id = u.id
-            LEFT JOIN ""releasehistory"" rh ON rh.parking_record_id = pr.id
-            WHERE 1=1");
+        SELECT 
+            pr.id,
+            CASE WHEN pr.vehicle_status_id = 1 THEN 'Приёмка' ELSE 'Выдача' END as operation_type,
+            CASE WHEN pr.vehicle_status_id = 1 THEN pr.admission_date ELSE rh.release_date END as operation_date,
+            v.license_plate,
+            vt.type as vehicle_type,
+            s.number as spot_number,
+            u.full_name as operator_name,
+            rh.storage_fee + rh.tow_fine as amount
+        FROM ""parkingrecords"" pr
+        JOIN ""spots"" s ON pr.spot_id = s.id
+        JOIN ""vehicles"" v ON pr.vehicle_id = v.id
+        JOIN ""vehicletypes"" vt ON pr.vehicle_type_id = vt.id
+        JOIN ""users"" u ON pr.operator_id = u.id
+        LEFT JOIN ""releasehistory"" rh ON rh.parking_record_id = pr.id
+        WHERE 1=1");
 
         if (!string.IsNullOrWhiteSpace(filter.LicensePlate))
-        {
             sql.Append(" AND v.license_plate ILIKE @licensePlate");
-        }
 
         if (!string.IsNullOrWhiteSpace(filter.Vin))
-        {
             sql.Append(" AND v.vin ILIKE @vin");
-        }
 
         if (filter.OperatorId.HasValue)
-        {
             sql.Append(" AND u.id = @operatorId");
-        }
 
         if (!string.IsNullOrWhiteSpace(filter.DocumentNumber))
-        {
             sql.Append(" AND rh.document_number ILIKE @documentNumber");
-        }
 
         if (filter.DocumentTypeId.HasValue)
-        {
             sql.Append(" AND rh.document_type_id = @documentTypeId");
-        }
 
         if (filter.DateFrom.HasValue)
-        {
             sql.Append(" AND COALESCE(pr.admission_date, rh.release_date) >= @dateFrom");
-        }
 
         if (filter.DateTo.HasValue)
-        {
             sql.Append(" AND COALESCE(pr.admission_date, rh.release_date) <= @dateTo");
-        }
+
+        // ← ДОБАВЛЕН ФИЛЬТР ПО ПАРКОВКЕ
+        if (filter.ParkingId.HasValue)
+            sql.Append(" AND s.parking_id = @parkingId");
 
         sql.Append(" ORDER BY operation_date DESC");
 
@@ -90,6 +80,8 @@ public class HistoryRepository : IHistoryRepository
             command.Parameters.AddWithValue("dateFrom", filter.DateFrom.Value);
         if (filter.DateTo.HasValue)
             command.Parameters.AddWithValue("dateTo", filter.DateTo.Value);
+        if (filter.ParkingId.HasValue)
+            command.Parameters.AddWithValue("parkingId", filter.ParkingId.Value);
 
         using var reader = await command.ExecuteReaderAsync();
 

@@ -9,4 +9,5 @@ public interface IAuthService
     bool IsAuthenticated { get; }
     void Logout();
     string HashPassword(string password);
+    Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
 }
