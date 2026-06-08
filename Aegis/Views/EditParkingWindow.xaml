@@ -1,0 +1,103 @@
+﻿<Window x:Class="Aegis.Views.EditParkingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:Aegis.Converters"
+        Title="Редактирование парковки" 
+        Height="778" Width="650"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="30">
+            <TextBlock Text="Редактирование парковки" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Город *" Margin="0,0,0,5"/>
+            <TextBox x:Name="TxtCity" Height="35" Margin="0,0,0,15" Padding="8"/>
+
+            <TextBlock Text="Улица *" Margin="0,0,0,5"/>
+            <TextBox x:Name="TxtStreet" Height="35" Margin="0,0,0,15" Padding="8"/>
+
+            <TextBlock Text="Дом *" Margin="0,0,0,5"/>
+            <TextBox x:Name="TxtBuilding" Height="35" Margin="0,0,0,15" Padding="8"/>
+
+            <TextBlock Text="Тарифы (₽/час)" FontSize="18" FontWeight="Bold" Margin="0,20,0,10"/>
+            <ItemsControl x:Name="LstTariffs">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="150"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding VehicleType}" VerticalAlignment="Center" FontSize="14"/>
+                            <TextBox Grid.Column="1" Text="{Binding Price, StringFormat={}{0}}" 
+                                     Height="30" Padding="5"
+                                     PreviewTextInput="NumberOnly"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Места" FontSize="18" FontWeight="Bold" Margin="0,20,0,10"/>
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TxtSpotNumber" Height="30" Padding="5" Grid.Column="0"/>
+                <ComboBox x:Name="CmbSpotType" Grid.Column="1" Height="30"/>
+                <Button Grid.Column="2" Content="➕ Добавить место" Width="150" Height="30"
+                        Background="#3498DB" Foreground="White" BorderThickness="0"
+                        Click="AddSpot_Click"/>
+            </Grid>
+
+            <ListBox x:Name="LstSpots" Height="200" Margin="0,0,0,15">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Number}" FontWeight="Bold" Width="50"/>
+                                <TextBlock Text=" - " Width="20"/>
+                                <TextBlock Text="{Binding VehicleType}"/>
+                                <TextBlock Text=" (" Margin="5,0,0,0"/>
+                                <TextBlock Text="{Binding Status}"/>
+                                <TextBlock Text=")"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="✕" Width="25" Height="25"
+                        Background="#E74C3C" Foreground="White" BorderThickness="0"
+                        Tag="{Binding Id}"
+                        Click="RemoveSpot_Click">
+                                <Button.Visibility>
+                                    <Binding Path="IsOccupied" Converter="{StaticResource InverseBoolToVisibilityConverter}">
+                                        <Binding.FallbackValue>
+                                            <x:Static Member="Visibility.Visible"/>
+                                        </Binding.FallbackValue>
+                                    </Binding>
+                                </Button.Visibility>
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Отмена" Width="120" Height="40" Margin="0,0,10,0"
+                        Background="#95A5A6" Foreground="White"
+                        Click="Cancel_Click"/>
+                <Button Content="Сохранить" Width="150" Height="40"
+                        Background="#27AE60" Foreground="White"
+                        FontWeight="Bold"
+                        Click="Save_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

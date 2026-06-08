@@ -1,8 +1,13 @@
 ﻿<Application x:Class="Aegis.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Aegis">
+             xmlns:converters="clr-namespace:Aegis.Converters">
+
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <converters:OperationTypeToColorConverter x:Key="OperationTypeToColorConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:BytesToImageConverter x:Key="BytesToImageConverter"/>
     </Application.Resources>
 </Application>
