@@ -96,7 +96,7 @@ public class MainViewModel : ViewModelBase
         NavigateToEmployeesCommand = new RelayCommand(_ => _navigationService.NavigateTo<EmployeesViewModel>());
         NavigateToParkingEditorCommand = new RelayCommand(_ => _navigationService.NavigateTo<ParkingEditorViewModel>());
         NavigateToAnalyticsCommand = new RelayCommand(_ => _navigationService.NavigateTo<AnalyticsViewModel>());
-        NavigateToAdminHistoryCommand = new RelayCommand(_ => _navigationService.NavigateTo<AdminHistoryViewModel>());
+        NavigateToAdminHistoryCommand = new RelayCommand(_ => _navigationService.NavigateTo<HistoryViewModel>());
         NavigateToPaymentsHistoryCommand = new RelayCommand(_ => _navigationService.NavigateTo<PaymentsHistoryViewModel>());
 
         LogoutCommand = new RelayCommand(_ => Logout());

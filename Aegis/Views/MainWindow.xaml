@@ -29,6 +29,8 @@
             <v:LoginView />
         </DataTemplate>
 
+        
+        
         <!-- DataTemplates для админа -->
         <DataTemplate DataType="{x:Type vm:AdminDashboardViewModel}">
             <v:AdminDashboardView />
@@ -42,9 +44,7 @@
         <DataTemplate DataType="{x:Type vm:AnalyticsViewModel}">
             <v:AnalyticsView />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:AdminHistoryViewModel}">
-            <v:AdminHistoryView />
-        </DataTemplate>
+        
         <DataTemplate DataType="{x:Type vm:PaymentsHistoryViewModel}">
             <v:PaymentsHistoryView />
         </DataTemplate>

@@ -154,7 +154,6 @@ public class HistoryViewModel : ViewModelBase
         foreach (var p in parkings)
             Parkings.Add(p);
 
-        // Добавляем пункт "Все парковки"
         Parkings.Insert(0, new ParkingDisplayModel
         {
             ParkingId = 0,
