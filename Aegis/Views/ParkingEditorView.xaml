@@ -68,7 +68,7 @@
             </ScrollViewer>
 
             <!-- Детали -->
-            <Border Grid.Column="1" Width="500" Background="#F8F9F9" BorderBrush="#8E44AD" BorderThickness="2"
+            <Border Grid.Column="1" Width="500" Background="#F8F9F9" BorderBrush="#34495E" BorderThickness="2"
                     CornerRadius="10" Padding="25"
                     Visibility="{Binding IsDetailsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">

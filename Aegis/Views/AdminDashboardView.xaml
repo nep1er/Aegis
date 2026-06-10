@@ -31,10 +31,10 @@
                   GridLinesVisibility="Horizontal"
                   Background="White"
                   BorderBrush="#BDC3C7"
-                  BorderThickness="1">
+                  BorderThickness="1" SelectionChanged="DataGrid_SelectionChanged">
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="#8E44AD"/>
+                    <Setter Property="Background" Value="#34495E"/>
                     <Setter Property="Foreground" Value="White"/>
                     <Setter Property="Padding" Value="10,8"/>
                     <Setter Property="FontWeight" Value="Bold"/>

@@ -72,7 +72,7 @@
                                         <TextBlock Text="{Binding Login}" FontSize="14" Foreground="#7F8C8D"/>
                                     </StackPanel>
 
-                                    <Border Grid.Column="1" Background="#8E44AD" CornerRadius="5" Padding="10,5">
+                                    <Border Grid.Column="1" Background="#34495E" CornerRadius="5" Padding="10,5">
                                         <TextBlock Text="{Binding RoleName}" Foreground="White" FontWeight="Bold"/>
                                     </Border>
                                 </Grid>
@@ -89,7 +89,7 @@
             </ScrollViewer>
 
             <!-- Детали -->
-            <Border Grid.Column="1" Width="400" Background="#F8F9F9" BorderBrush="#8E44AD" BorderThickness="2"
+            <Border Grid.Column="1" Width="400" Background="#F8F9F9" BorderBrush="#34495E" BorderThickness="2"
                     CornerRadius="10" Padding="25"
                     Visibility="{Binding IsDetailsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel>
