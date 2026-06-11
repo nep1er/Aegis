@@ -7,16 +7,16 @@ public interface IReleaseRepository
     Task<int> CompleteReleaseAsync(ReleaseData data);
 }
 
+
 public class ActiveVehicleModel
 {
     public int ParkingRecordId { get; set; }
+    public int VehicleId { get; set; }
     public string LicensePlate { get; set; } = string.Empty;
     public string VehicleType { get; set; } = string.Empty;
-    public int VehicleTypeId { get; set; }
-    public int SpotId { get; set; }
     public string SpotNumber { get; set; } = string.Empty;
-    public DateTime AdmissionDate { get; set; }
     public decimal Tariff { get; set; }
+    public DateTime AdmissionDate { get; set; }
     public decimal TowFine { get; set; }
 }
 
